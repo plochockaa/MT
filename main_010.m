@@ -83,16 +83,16 @@ haha_array = []; % collect the output of the main code
     casestudy = 1; 
     
     %_______________( initiating the cell )____________________________
-    a   = 1; 
-    b   = a./sqrt(1 - ecc^2); 
+    a   = 60; 
+    gamma = [0   80 110 0  ]/180*pi;
+   [b] = lengths_for_ecc(ecc,N,gamma,a,Nsegments);
     
     Lsize = max(10, 1/2* beta*(alpha + betapr)./(beta*betapr  - alpha*alphapr)); 
     L     = [a b  a b]; 
-    gamma = [0   80 110 0  ]/180*pi;
+  
     
     timetodraw = 0; 
     
-    L = L* 60 ;  % all the runs for the paper are with the shortest edge of the cell = 60 dimers  
     
   
     
