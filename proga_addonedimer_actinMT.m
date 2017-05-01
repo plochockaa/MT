@@ -60,7 +60,7 @@
 
 
 function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,bigstate,state] ...
-         = proga_addonedimer06(zipbulk,site,siten,segm,sidenode,seedside,xseed,gamma,intsctysno,intsctdist,intsctdistside,N,Nsegments,Nactin,L,intsctinfty,capyesno,bigstate,state,thetacrwall,thetacrmt,Pcat)
+         = proga_addonedimer_actinMT(pcat_actin,zipbulk,actin_collision,site,siten,segm,sidenode,seedside,xseed,gamma,intsctysno,intsctdist,intsctdistside,N,Nsegments,Nactin,L,intsctinfty,capyesno,bigstate,state,thetacrwall,thetacrmt,Pcat)
      
       
      eps = 1.0e-8; 
@@ -227,16 +227,13 @@ function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,big
             osegmn2 = locs(postn);                                    % overall sgmnt postn of the MT that has the shortest xing with our MT segmnt 
             
             for ii = 1:index_crossed, 
-                if (zipbulk);
-                 
-                [togrowsegm_arr(ii), thetasegm_arr(ii)] = ...
-                    proga_zipyesnoDM01(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);  % check if should zip 
-                    
-                else
-                [togrowsegm_arr(ii), thetasegm_arr(ii)] = ... 
-                    proga_zipyesno_lesszipbulk(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);
                 
-                end
+%                 if siten_crossed_arr(ii)>N; 
+%                     [togrowsegm_arr(ii), thetasegm_arr(ii)] = proga_zipyesno_actin(pcat_actin,site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4));
+%                 else
+                   [togrowsegm_arr(ii), thetasegm_arr(ii)] = proga_zipyesnoDM01(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);  % check if should zip 
+                % end
+                
             end 
             thetasegm = thetasegm_arr(postn);                         % in case of zipping, will go along this theta
           
@@ -332,16 +329,11 @@ function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,big
                                 osegmn2 = locsz(postnz);                                    % overall sgmnt postn of the MT that has the shortest xing with our MT segmnt 
 
                                 for ii = 1:index_crossedz, 
-                                    if (zipbulk);
-                 
-                                    [togrowsegm_arr(ii), thetasegm_arr(ii)] = ...
-                                        proga_zipyesnoDM01(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);  % check if should zip 
-
-                                    else
-                                    [togrowsegm_arr(ii), thetasegm_arr(ii)] = ... 
-                                        proga_zipyesno_lesszipbulk(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);
-
-                                    end
+%                                     if siten_crossed_arr(ii)>N;
+%                                         [togrowsegm_arrz(ii), thetasegm_arrz(ii)] = proga_zipyesno_actin(pcat_actin,site(siten,segmn,4),site(siten_crossed_arrz(ii),segmn_crossed_arrz(ii),4));
+%                                     else
+                                       [togrowsegm_arrz(ii), thetasegm_arrz(ii)] = proga_zipyesnoDM01(site(siten,segmn,4),site(siten_crossed_arrz(ii),segmn_crossed_arrz(ii),4),thetacrmt,Pcat);  % check if should zip 
+%                                     end
                                 end 
                                 thetasegm = thetasegm_arrz(postnz);                         % in case of zipping, will go along this theta
 

@@ -1,22 +1,42 @@
-function                proga_drawing08_brightness(theta_hist_avg, xseed,segm,sidenode, L, N,site,time,avglengthmt,uu,SD,uustd0,avguu,...
-                   drawingtimearray,V,ecc,avglengthmttheory,xseed1,mtdensity,fracnonzeroMTs,timesdrawn,half_width);
+function                proga_drawing08_actin(theta_hist_avg, xseed,segm,sidenode, L, N,Nactin,site,time,avglengthmt,SD,uustd0,avguu,...
+                   drawingtimearray,V,ecc,avglengthmttheory,xseed1,mtdensity,fracnonzeroMTs,timesdrawn,half_width,dir_name);
 
-    qwer = size(site); 
+    qwer =size(site(1:N,:,:)); 
     Nsegments = qwer(2); 
                
 
-    index_bightness = proga_index_brightness(xseed,segm,site,half_width);
+    index_bightness = proga_index_brightness(N,xseed,segm,site,half_width);
     index_bightness_segment = sum(index_bightness,2); 
 
     color_factor = 0.8/6; % max(1,max(index_bightness_segment)); 
 
     figure(1); 
    clf
+   set(gcf, 'Position', [200   200   500   500]);
+   %  >>> NOTE <<< 
+   % use  get(gcf,'position') to find where the current screen is -- set it manually
+  % movegui(figure(1),'northwest');
+   
 
    % subplot(3,4,[1,2,5,6,9,10]);
       %  plot([xseed(:,1,1);xseed(1,1,1)],[xseed(:,1,2);xseed(1,1,2)],'ro'); % plot the cell itself with red circles being the seeds. 
-        plot([sidenode(:,1);  sidenode(1,1)], [sidenode(:,2);  sidenode(1,2)],'Color',[1 0 1],'LineWidth',3); % plot the cell sides 
+      
+
+          
+ 
+for a=N+1:Nactin+N;
+    xactin=site(a,1,1)*cos(site(a,1,4));
+    yactin=site(a,1,1)*sin(site(a,1,4)); 
+          
+    plot([0 xactin]+xseed(a,1,1),[0 yactin]+xseed(a,1,2),'Color',[.4 0.5 1],'LineWidth',.5);
+   
+hold on
+end
+
+
+  plot([sidenode(:,1);  sidenode(1,1)], [sidenode(:,2);  sidenode(1,2)],'Color',[1 0 1],'LineWidth',3); % plot the cell sides 
         hold on; 
+
 
         
         beh = max(L)/10; 
@@ -65,7 +85,7 @@ function                proga_drawing08_brightness(theta_hist_avg, xseed,segm,si
         
         
 % movegui(gcf,[0 0]);
- set(gcf, 'Position', [0 0 1000 1000 ]);
+ %set(gcf, 'Position', [0 0 500 500 ]);
  text1 =  ['MTSD = ', num2str(SD)];
  % -- used for 0.9 -- text(80,10, text1,'Color','k','FontSize',20,'FontWeight','bold','HorizontalAlignment','left');
  % -- used for 0.85 -- text(70,10, text1,'Color','k','FontSize',20,'FontWeight','bold','HorizontalAlignment','left');
@@ -94,9 +114,9 @@ function                proga_drawing08_brightness(theta_hist_avg, xseed,segm,si
  % set(gcf,'Color','black'); %whitebg(1,'k'); 
  %>>>>> SAVING THE FIGURE <<<< 
  
- pause(0.001)
+ pause(.1)
 
-  figure_filename = ['movie_mt_white_time_thick_lines_smoothed_brightness',num2str(10000+timesdrawn),'.png'];
+  figure_filename = [dir_name,'movie_mt_white_time_thick_lines_smoothed_brightness',num2str(10000+timesdrawn),'.png'];
   f = getframe;  imwrite(f.cdata, figure_filename);
  
  
@@ -150,7 +170,7 @@ function                proga_drawing08_brightness(theta_hist_avg, xseed,segm,si
 %          whitebg(1,'k')
 %          
         
-        pause(0.001); 
+        pause(0.01); 
         
         hold off; 
 

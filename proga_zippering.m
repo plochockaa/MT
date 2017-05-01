@@ -32,15 +32,22 @@
 %
 %==========================================================================
 %
-function qwerqwer  = proga_zippering_011...
-               (zipbulk,timetodraw, dt, L, gamma, Nsides, xseed, seedside, sidenode, ...
-                N,Nactin,Nsegments,alpha, alphapr, beta, betapr, t_end, drawfinal,drawall, casestudy,...
+function qwerqwer  = proga_zippering...
+               (zipbulk,site, timetodraw, dt, L, gamma, Nsides, xseed, seedside, sidenode, ...
+                N,Nsegments,Nactin,alpha, alphapr, beta, betapr, t_end, drawfinal,drawall, casestudy,...
                 thetacrwall,thetacrmt,ecc,avglengthmttheory,xseed1,Pcat,draw0screen1,half_width,dir_name,testnumber);
+            
+
 
 cycles   = 0;                            % number of cycles that has started
 state    = [alphapr, alpha,  alphapr;    % the first column is all the possible states when the cap is off
                beta, betapr, 0     ];    % the second column is all the possible states when the cap is on. 
-                                         % the third column is the rate of exiting the zero length situation                     
+                                         % the third column is the rate of exiting the zero length situation    
+                                         
+
+% segm     = zeros(N+Nactin,1); 
+% segm(N+1:N+Nactin)=1;  %all Actin have one segment 
+
 site     = zeros(N,Nsegments,4);         % initialize all the sites have length zero
 segm     = zeros(N,1); 
 capyesno = zeros(N,1); 
@@ -72,8 +79,8 @@ theta_hist_avg = zeros(180,1);              % the averaged over time histogram o
 % - intsctdist = how long to the intersection.
 
 intsctinfty    = 600;                               % if there is no intersection, set the distance to intersection to be a big number  = 5 exp. length of  MT. 
-intsctdist     = ones (N*Nsegments,N*Nsegments)*intsctinfty;  % matrix of intersections A(i,j) = if (i) intersects (j), distance for (i) to the intersection. 
-intsctysno     = zeros(N*Nsegments,N*Nsegments);             % an array of 0,1s if the intersection has already happened or no.  
+intsctdist     = ones ((N+Nactin)*Nsegments,(N+Nactin)*Nsegments)*intsctinfty;  % matrix of intersections A(i,j) = if (i) intersects (j), distance for (i) to the intersection. 
+intsctysno     = zeros((N+Nactin)*Nsegments,(N+Nactin)*Nsegments);             % an array of 0,1s if the intersection has already happened or no.  
 intsctdistside = ones(N*Nsegments,Nsides)*intsctinfty; 
 
 todraw     = 0; % to draw or not to draw
@@ -91,7 +98,7 @@ sd_array = zeros(10000, 2);
 
 %___ for saving files for plotitng later
 state_cell = zeros(N*Nsegments + 1, 6); % Here the 6  elements are : r  cos(theta)    sin(theta) theta   xseed    yseed 
-
+M = zeros(N, 3);
 index_saved_figure = 1;
 t_save_figure =  [t_end-3 : 0.03 : t_end];
 
@@ -99,23 +106,27 @@ t_save_figure =  [t_end-3 : 0.03 : t_end];
 
 %____________( Main Cycle )_____________________________________________
 
+
 tic
  while ((time<t_end) ), 
     tindex = tindex+1;
     % _______________( figure out  which site is active )__________
     bigsum  = sum(bigstate);
     [mm,ii] = max( real((cumsum(bigstate./bigsum) - rand)>0)); 
+    
                                                                 % the first max gives the active site and what it does.
 
+                                                               
     ab = mod(ii,2);                                             % if it's alpha or betas: ab<0.5 -> alphas, ab>0.5 -> betas.
-    if (ab<0.5), siten = floor(ii)/2; else siten = (ii+1)/2; end % site number 
+    if (ab<0.5), siten = floor(ii)/2;  else siten = (ii+1)/2;  end % site number 
+    
 
     % --- one growing cycle ---                                 % --- one growing cycle ---    
     if capyesno(siten)>0.5,                                     % if have a cap, then in An
         if ab > 0.5,                                            %    if (alpha  = if have a cap and growing) 
            
             [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,bigstate,state] ...
-         = proga_addonedimer06(site,siten,segm,sidenode,seedside,xseed,gamma,intsctysno,intsctdist,intsctdistside,N,Nsegments,L,intsctinfty,capyesno,bigstate,state,thetacrwall,thetacrmt,Pcat);
+         = proga_addonedimer06(zipbulk,site,siten,segm,sidenode,seedside,xseed,gamma,intsctysno,intsctdist,intsctdistside,N,Nsegments,Nactin,L,intsctinfty,capyesno,bigstate,state,thetacrwall,thetacrmt,Pcat);
             
             cost = cost + 1; 
         else                                                    %    else (if betapr = if have a cap and losing a cap)
@@ -134,7 +145,7 @@ tic
             end
             
             [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,bigstate,state] ...
-         = proga_addonedimer06(site,siten,segm,sidenode,seedside,xseed,gamma,intsctysno,intsctdist,intsctdistside,N,Nsegments,L,intsctinfty,capyesno,bigstate,state,thetacrwall,thetacrmt,Pcat);
+         = proga_addonedimer06(zipbulk,site,siten,segm,sidenode,seedside,xseed,gamma,intsctysno,intsctdist,intsctdistside,N,Nsegments,Nactin,L,intsctinfty,capyesno,bigstate,state,thetacrwall,thetacrmt,Pcat);
             
            cost = cost + 1; 
         else                                                    %    else ( beta  = don't have a cap and shrinking)
@@ -148,7 +159,7 @@ tic
 
     % --- end one growing cycle ---
     
-    ddt = - log(rand)/bigsum;                                   % time increment
+    ddt  = - log(rand)/bigsum;                                  % time increment
     time = time  + ddt;                                         % adjust the time 
     
     if time > drawtime + dt, 
@@ -220,7 +231,7 @@ tic
             
             %______________ saving the cell state once in a while________
    
-    if and(time > t_save_figure(index_saved_figure), time < t_save_figure(index_saved_figure) + dt),
+             if and(time > t_save_figure(index_saved_figure), time < t_save_figure(index_saved_figure) + dt),
                 index_saved_figure = index_saved_figure  + 1; 
                 
                 for siten = 1:N, 
@@ -233,7 +244,14 @@ tic
                            xseed(siten,segmn,1)...
                            xseed(siten,segmn,2)];
                     end
+                         A = siten;
+                         B = sum(nonzeros(site(siten,:,1)));
+                         C = site(siten,1,4);
+                         M(siten,:) = [A, B, C];
+                         
                 end
+                state_cell(N*Nsegments + 1,:) = [N Nsegments time L(1) 0 0];
+                
                 filename_state_cell = [dir_name,'state_cell_',num2str(ecc*100),'_t_',num2str(index_saved_figure),'_testnumber_',num2str(testnumber),'Actin_',num2str(Nactin),'_ap',num2str(alphapr),'bp',num2str(betapr),'a',num2str(alpha),'b',num2str(beta),'Pcat',num2str(Pcat),'theta',num2str(thetacrmt),'thetawall',num2str(thetacrwall),'aN',num2str(N),'zipbulk',num2str(zipbulk),'L60_1.csv'];
                 csvwrite(filename_state_cell,          state_cell);
                 disp(['____ saved figure to',filename_state_cell]);
@@ -241,6 +259,8 @@ tic
                 filenamesused_theta_hist_avg = [dir_name,'angles_lengths_ecc_',num2str(ecc*100),'_t_',num2str(index_saved_figure),'_testnumber_',num2str(testnumber),'Actin_',num2str(Nactin),'_ap',num2str(alphapr),'bp',num2str(betapr),'a',num2str(alpha),'b',num2str(beta),'Pcat',num2str(Pcat),'theta',num2str(thetacrmt),'thetawall',num2str(thetacrwall),'aN',num2str(N),'zipbulk',num2str(zipbulk),'L60_1.csv'];
                 csvwrite(filenamesused_theta_hist_avg,theta_hist_avg);
                 
+
+
              end
 
      end
@@ -249,18 +269,20 @@ tic
      if draw0screen1 == 0, 
          if and( todraw > 0.5, time>timetodraw),
 
-               proga_drawing08_brightness(theta_hist_avg, xseed,segm,sidenode, L, N,site,time,avglengthmt,uu,SD,uustd0,avguu,...
-                   drawingtimearray,V,ecc,avglengthmttheory,xseed1,mtdensity,fracnonzeroMTs,timesdrawn,half_width);
+             
+   %%%%% plotting with actin uses the site information to plot the Actin seeds          
+               proga_drawing08_actin(theta_hist_avg, xseed,segm,sidenode, L, N,Nactin,site,time,avglengthmt,uu,SD,uustd0,avguu,...
+                   drawingtimearray,V,ecc,avglengthmttheory,xseed1,mtdensity,fracnonzeroMTs,timesdrawn,half_width,dir_name);
      %           disp(['t = ', num2str(time),', SD = ', num2str( SD),', frac nonzero mts  = ', num2str(fracnonzeroMTs (timesdrawn)), ...
      %         ', avg(length MT) = ', num2str(   avglengthmt(timesdrawn))]);
                todraw = 0; 
          end 
-%      else
-%          if and( todraw > 0.5, time>timetodraw),
-%             disp(['t = ', num2str(time),', SD = ', num2str( SD ),', frac nonzero mts  = ', num2str(fracnonzeroMTs (timesdrawn)), ...
-%               ', avg(length MT) = ', num2str(   avglengthmt(timesdrawn))]);
-%             todraw = 0; 
-%          end
+     else
+         if and( todraw > 0.5, time>timetodraw),
+            disp(['t = ', num2str(time),', SD = ', num2str( SD ),', frac nonzero mts  = ', num2str(fracnonzeroMTs (timesdrawn)), ...
+              ', avg(length MT) = ', num2str(   avglengthmt(timesdrawn))]);
+            todraw = 0; 
+        end
      end
      
   
@@ -291,13 +313,14 @@ filenamesused_mtsd = [dir_name,'mtsd_time_evolution',num2str(ecc*100),'testnumbe
  csvwrite(filenamesused_theta_hist_avg,theta_hist_avg);
  csvwrite(filenamesused_mtsd,          sd_array);
  
+
    %______________ saving the cell state once in a while________
    
                 index_saved_figure = index_saved_figure  + 1; 
                 
                 for siten = 1:N, 
                     for segmn = 1:Nsegments, 
-                        state_cell(siten*(Nsegments - 1) + segmn, : ) = ...
+                        state_cell(Nsegments*(siten - 1) + segmn, : ) = ...
                            [site(siten,segmn,1) ...
                            site(siten,segmn,2) ...
                            site(siten,segmn,3) ...
@@ -305,13 +328,18 @@ filenamesused_mtsd = [dir_name,'mtsd_time_evolution',num2str(ecc*100),'testnumbe
                            xseed(siten,segmn,1)...
                            xseed(siten,segmn,2)];
                     end
+                         A = siten;
+                         B = sum(nonzeros(site(siten,:,1)));
+                         C = site(siten,1,4);
+                         M(siten,:) = [A, B, C];
                 end
                 state_cell(N*Nsegments + 1,:) = [N Nsegments time L(1) 0 0];
                 
                 filename_state_cell = [dir_name,'state_cell_',num2str(ecc*100),'_t_',num2str(index_saved_figure),'_testnumber_',num2str(testnumber),'Actin_',num2str(Nactin),'_ap',num2str(alphapr),'bp',num2str(betapr),'a',num2str(alpha),'b',num2str(beta),'Pcat',num2str(Pcat),'theta',num2str(thetacrmt),'thetawall',num2str(thetacrwall),'aN',num2str(N),'zipbulk',num2str(zipbulk),'L60_1.csv']
                 csvwrite(filename_state_cell, state_cell);
 
-   
+
+    
 
  
 end

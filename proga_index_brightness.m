@@ -21,10 +21,11 @@
 %
 
 
-function   index_bightness = proga_index_brightness(xseed,segm,site,half_width);
+function   index_bightness = proga_index_brightness(N,xseed,segm,site,half_width);
 
 
-    qwer = size(site); 
+
+    qwer = size(site(1:N,:,:)); 
     Nsegments = qwer(2); 
     N         = qwer(1);
     

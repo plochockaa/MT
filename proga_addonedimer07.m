@@ -60,7 +60,7 @@
 
 
 function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,bigstate,state] ...
-         = proga_addonedimer06(zipbulk,site,siten,segm,sidenode,seedside,xseed,gamma,intsctysno,intsctdist,intsctdistside,N,Nsegments,Nactin,L,intsctinfty,capyesno,bigstate,state,thetacrwall,thetacrmt,Pcat)
+         = proga_addonedimer06(site,siten,segm,sidenode,seedside,xseed,gamma,intsctysno,intsctdist,intsctdistside,N,Nsegments,Nactin,L,intsctinfty,capyesno,bigstate,state,thetacrwall,thetacrmt,Pcat)
      
       
      eps = 1.0e-8; 
@@ -105,7 +105,7 @@ function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,big
                     capyesno(siten) = 0;   bigstate([2*siten-1, 2*siten]) = state(:,3);  % lost cap. :<, back to B0 state. 
                     [site,segm,capyesno,intsctysno,intsctdist,intsctdistside,bigstate] =  ...
                         proga_shrinking001(site,siten,segm,Nsegments,capyesno,intsctysno,intsctdist,intsctdistside,bigstate,state,intsctinfty);
-              else % if growing from zero into another direction... 
+              else % if growig from zero into another direction... 
                    if badsiden == prevsidearr(seedside(siten)),   thetasegm = mod(gamma1(prevsidearr(seedside(siten))) + pi,2*pi);  % if intersecting a side, it's either the next one or the previous one. Pick the angle of the new direction (thetasegm) accordingly. 
                    else                                           thetasegm =     gamma1(nextsidearr(seedside(siten)));
                    end 
@@ -227,16 +227,8 @@ function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,big
             osegmn2 = locs(postn);                                    % overall sgmnt postn of the MT that has the shortest xing with our MT segmnt 
             
             for ii = 1:index_crossed, 
-                if (zipbulk);
-                 
-                [togrowsegm_arr(ii), thetasegm_arr(ii)] = ...
-                    proga_zipyesnoDM01(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);  % check if should zip 
-                    
-                else
                 [togrowsegm_arr(ii), thetasegm_arr(ii)] = ... 
-                    proga_zipyesno_lesszipbulk(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);
-                
-                end
+                    proga_zipyesnoDM01(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);  % check if should zip 
             end 
             thetasegm = thetasegm_arr(postn);                         % in case of zipping, will go along this theta
           
@@ -258,12 +250,8 @@ function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,big
                 intsctdist(osegmn, locs) = intsctinfty;  intsctdist(locs,osegmn) = intsctinfty;  
             %*******************
             else  %if zipping -- zip along the closest one 
-                
-               %XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-               
-               site(siten,segmn,1) = site(siten,segmn,1) - 1;  % deleted the dimer that we've just grown.
-               
-               %XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                                    
+                site(siten,segmn,1) = site(siten,segmn,1) - 1;  % deleted the dimer that we've just grown.
                 
                 %________________( if it is ***NOT*** the very first dimer, do the following )________________________________
                 if not(and( site(siten,segmn,1) == 0 , segm(siten) == 1)), 
@@ -332,16 +320,8 @@ function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,big
                                 osegmn2 = locsz(postnz);                                    % overall sgmnt postn of the MT that has the shortest xing with our MT segmnt 
 
                                 for ii = 1:index_crossedz, 
-                                    if (zipbulk);
-                 
-                                    [togrowsegm_arr(ii), thetasegm_arr(ii)] = ...
-                                        proga_zipyesnoDM01(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);  % check if should zip 
-
-                                    else
-                                    [togrowsegm_arr(ii), thetasegm_arr(ii)] = ... 
-                                        proga_zipyesno_lesszipbulk(site(siten,segmn,4),site(siten_crossed_arr(ii),segmn_crossed_arr(ii),4),thetacrmt,Pcat);
-
-                                    end
+                                    [togrowsegm_arrz(ii), thetasegm_arrz(ii)] = ... 
+                                        proga_zipyesnoDM01(site(siten,segmn,4),site(siten_crossed_arrz(ii),segmn_crossed_arrz(ii),4),thetacrmt,Pcat);  % check if should zip 
                                 end 
                                 thetasegm = thetasegm_arrz(postnz);                         % in case of zipping, will go along this theta
 
@@ -377,7 +357,7 @@ function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,big
                     segmn       = 1; 
                     segm(siten) = 1; 
                     
-                    if or(abs(alpha111 - thetasegm)<1.e-2, abs(alpha111 + pi - thetasegm) < 1.e-2),
+                    if or (abs(alpha111 - thetasegm)<1.e-2, abs(alpha111 + pi - thetasegm) < 1.e-2),
                          
                         % figure out if the new growth is parallel to the wall from zero length. 
                         % thetasegm = the direction of the growth of the new segment 
@@ -414,8 +394,6 @@ function [site, segm, xseed, intsctysno, intsctdist, intsctdistside,capyesno,big
                            [site,segm,capyesno,intsctysno,intsctdist,intsctdistside,bigstate] = ...
                               proga_shrinking001(site,siten,segm,Nsegments,capyesno,intsctysno,intsctdist,intsctdistside,bigstate,state,intsctinfty);
                            boo_index = 1; 
-                           
-                           site(siten,segmn,1) = 0; %>>>>>>>> X X X  <<<<<<<<<<< (should properly (!) check if the shrinking is deleting an extra segment)
                           
                           %>>> start growing parallel to the other MT in
                           %the direction of the cell !!!

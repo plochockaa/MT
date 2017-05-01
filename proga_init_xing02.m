@@ -57,9 +57,10 @@ function [intsctdistside,intsctysno,intsctdist] = ...
      %______ check interesections with other MT segments __________
      tocheckMTarray = circshift([1:N+Nactin]',-siten)'; tocheckMTarray = tocheckMTarray(1:end-1); % the array of which MTs to check xing with 
      
-     for jj = 1:N+Nactin-1, 
+     for jj = 1:N-1, 
          tocheckMT = tocheckMTarray(jj);
-         
+        
+         segm(N+1:N+Nactin)=1;
          
          if segm(tocheckMT)>0.5, % if that MT has any segments at all --> check intersections with all the existing segments. 
              for tochecksegm = 1:segm(tocheckMT), % go through all the segments that MT has 
